@@ -30,13 +30,15 @@ The project includes a Dockerfile and a Render Blueprint in `render.yaml`. Rende
 
 1. Create a **private** GitHub repository and push this project to it. Do not upload `pocketledger.db`, `pocketledger-auth.db`, secrets, or local user data. The `.gitignore` excludes these files; verify the repository contents before pushing.
 2. Create a Render account and connect the private repository.
-3. In Render, create a new Blueprint from the repository and review the services and their current prices. Applying it provisions paid compute and database resources and starts billing under Render's current terms.
+3. In Render, create a new Blueprint from the repository. The included Blueprint is configured for the free web and PostgreSQL plans in Virginia to match the existing service shown in the Render setup. Confirm the selected plans before applying any changes.
 4. Apply the Blueprint. Wait for the web service health check at `/healthz` to pass, then open the generated `onrender.com` address and try account creation and sign-in.
 5. Before enabling public registration, finish the privacy/legal details and production checks below. Add a custom domain later if you own one; use the generated Render address for the initial deployment.
 
-The production configuration uses PostgreSQL with separate `accounts` and `finance` schemas in the same managed database. Local SQLite data files are deliberately excluded from the deployment image and source control; the hosted service starts with an empty database. Existing local accounts and entries are not migrated.
+The Render preview configuration uses its free web and PostgreSQL plans with separate `accounts` and `finance` schemas in one database. Free Render Postgres expires after 30 days and its data is deleted after the following grace period, so treat it as temporary preview storage only. Do not accept real financial data or promise permanent storage on that plan. Local SQLite data files are deliberately excluded from the deployment image and source control; the hosted service starts with an empty database. Existing local accounts and entries are not migrated.
 
-Non-development startup now fails clearly if `Database__Provider=Postgres` is missing. This prevents production from silently writing signups and balances to an ephemeral SQLite file. Render Blueprint supplies both the provider and database URL.
+Non-development startup requires a persistent PostgreSQL database and automatically uses Render's standard `DATABASE_URL` when present. The Render Blueprint provisions a PostgreSQL database, sets `Database__Provider=Postgres`, and links its connection URL to `DATABASE_URL`. Local SQLite data files are never used as a production fallback.
+
+If you created a Render Web Service directly instead of applying the Blueprint, create a Render Postgres database in the same region as the web service, then connect it to the web service. Set `Database__Provider` to `Postgres` and `Database__Postgres__Url` to the database's internal URL, or set `DATABASE_URL` to the internal connection string. Save the environment changes and redeploy. The current startup error means neither a PostgreSQL provider nor a PostgreSQL URL reached the service. Do not use a local SQLite file for production because it is not persistent across Render deploys.
 
 ## Before opening registration publicly
 

@@ -13,13 +13,20 @@ using PocketLedger.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var usePostgres = string.Equals(builder.Configuration["Database:Provider"], "Postgres", StringComparison.OrdinalIgnoreCase);
+var postgresUrl = builder.Configuration["DATABASE_URL"]
+    ?? builder.Configuration["Database:Postgres:Url"];
+var providerIsPostgres = string.Equals(builder.Configuration["Database:Provider"], "Postgres", StringComparison.OrdinalIgnoreCase);
+// Render exposes linked Postgres credentials as DATABASE_URL. Prefer that
+// explicit persistent connection in production even if the provider flag was
+// omitted from a manually-created Render Web Service.
+var usePostgres = providerIsPostgres
+    || (!builder.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(postgresUrl));
 if (!builder.Environment.IsDevelopment() && !usePostgres)
 {
     throw new InvalidOperationException(
-        "Production must use the managed PostgreSQL database. Configure Database__Provider=Postgres and Database__Postgres__Url to avoid storing account data on ephemeral local disk.");
+        "Production must use a persistent PostgreSQL database. On Render, attach a PostgreSQL database and set DATABASE_URL, or configure Database__Provider=Postgres and Database__Postgres__Url. The app will not store account data on ephemeral local disk.");
 }
-var postgresConnection = usePostgres ? CreatePostgresConnectionString(builder.Configuration) : null;
+var postgresConnection = usePostgres ? CreatePostgresConnectionString(builder.Configuration, postgresUrl) : null;
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -160,9 +167,9 @@ app.MapRazorPages()
 
 app.Run();
 
-static string CreatePostgresConnectionString(IConfiguration configuration)
+static string CreatePostgresConnectionString(IConfiguration configuration, string? configuredUrl)
 {
-    var connectionUrl = configuration["Database:Postgres:Url"];
+    var connectionUrl = configuredUrl;
     var builder = new NpgsqlConnectionStringBuilder
     {
         SslMode = SslMode.Require,
