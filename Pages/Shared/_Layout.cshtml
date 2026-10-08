@@ -34,9 +34,9 @@
             <div class="nav-links">
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "active" : "")" asp-area="" asp-page="/Index">Overview</a>
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Savings" ? "active" : "")" asp-page="/Savings">Savings</a>
-                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Investments" ? "active" : "")" asp-page="/Investments">Investments</a>
                 <a class="nav-link" asp-page="/Guides">Guides</a>
-                @if (User.Identity?.IsAuthenticated == true) { <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Banking" ? "active" : "")" asp-page="/Banking">Bank cards</a> }
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/About" ? "active" : "")" asp-page="/About">About</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Contact" ? "active" : "")" asp-page="/Contact">Contact</a>
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Plans" ? "active" : "")" asp-area="" asp-page="/Plans">Plans</a>
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Privacy" ? "active" : "")" asp-area="" asp-page="/Privacy">Privacy</a>
             </div>
@@ -61,7 +61,7 @@
     <footer class="app-footer">
         <div class="container d-flex justify-content-between flex-wrap gap-2">
             <span>&copy; 2026 Finance Freedom</span>
-            <div class="footer-links"><a asp-page="/Guides">Money guides</a><a asp-page="/Privacy">Privacy</a></div>
+            <div class="footer-links"><a asp-page="/About">About us</a><a asp-page="/Guides">Money guides</a><a asp-page="/Contact">Contact us</a><a asp-page="/Privacy">Privacy</a></div>
         </div>
     </footer>
 

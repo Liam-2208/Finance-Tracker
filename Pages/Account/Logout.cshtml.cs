@@ -10,6 +10,6 @@ public class LogoutModel(SignInManager<ApplicationUser> signInManager) : PageMod
     public async Task<IActionResult> OnPostAsync()
     {
         await signInManager.SignOutAsync();
-        return RedirectToPage("/Index");
+        return RedirectToPage("/Home");
     }
 }

@@ -1,92 +1,56 @@
 @page "/plans"
 @model PlansModel
 @{
-    ViewData["Title"] = "Plans";
+    ViewData["Title"] = "Free plan";
+    ViewData["Description"] = "Finance Freedom's free, ad-supported tools for tracking spending, setting budgets and planning savings.";
 }
 
 <div class="container plans-shell py-5">
     <div class="plans-intro text-center">
-        <span class="section-kicker">SIMPLE, TRANSPARENT PLANS</span>
-        <h1>Make your money work for you.</h1>
-        <p>Start free. Upgrade when you want more room to plan.</p>
+        <span class="section-kicker">SIMPLE, TRANSPARENT ACCESS</span>
+        <h1>Money tools, free to use.</h1>
+        <p>Finance Freedom is currently funded by ads on public educational pages.</p>
     </div>
 
     @if (Model.PaymentStatus == "success")
     {
-        <div class="billing-notice">Checkout completed. Your Plus plan will activate as soon as Stripe confirms the subscription.</div>
+        <div class="billing-notice">Your existing subscription is being updated. Check your account in a moment.</div>
     }
-    else if (Model.PaymentStatus == "cancelled")
+    else if (Model.BillingStatus == "setup-needed")
     {
-        <div class="billing-notice">Checkout was cancelled. You have not been charged.</div>
-    }
-    @if (Model.BillingStatus == "setup-needed")
-    {
-        <div class="billing-notice billing-notice-warn">Online checkout is not configured yet. Add your Stripe secret, webhook signing secret, and public site URL to the deployment settings.</div>
+        <div class="billing-notice billing-notice-warn">Online payments are not part of the current launch plan. You can use Finance Freedom for free.</div>
     }
 
-    <div class="row g-4 justify-content-center plans-grid">
-        <div class="col-md-6 col-lg-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
             <section class="plan-card h-100">
-                <div class="plan-label">GOOD TO GET STARTED</div>
+                <div class="plan-label">AD-SUPPORTED ACCESS</div>
                 <h2>Free</h2>
                 <div class="plan-price">£0 <span>forever</span></div>
-                <p class="plan-summary">The essentials for getting a handle on your money.</p>
+                <p class="plan-summary">The full set of core tools for planning and understanding your money.</p>
                 <ul class="plan-features">
                     <li>Weekly and monthly income and spending</li>
-                    <li>Transactions with edit and delete</li>
-                    <li>Up to 3 category budgets each month</li>
-                    <li>Category spending overview</li>
+                    <li>Add, edit, and delete transactions</li>
+                    <li>Category spending charts and unlimited budgets</li>
+                    <li>Monthly savings estimates</li>
+                    <li>CSV export of your transactions</li>
                     <li>Private account with data deletion controls</li>
-                    <li>Sponsored placements may support the free plan</li>
+                    <li>Ads appear on public money guides, not beside your personal finance figures</li>
                 </ul>
                 @if (Model.Account is null)
                 {
                     <a class="btn plan-free-button w-100" asp-page="/Account/Register">Create a free account</a>
                 }
-                else if (Model.Account.IsPlus)
-                {
-                    <div class="plan-current">Included with your Plus plan</div>
-                }
                 else
                 {
-                    <div class="plan-current">Your current plan</div>
+                    <a class="btn plan-free-button w-100" asp-page="/Index">Go to your overview</a>
                 }
-            </section>
-        </div>
-        <div class="col-md-6 col-lg-5">
-            <section class="plan-card plan-plus h-100">
-                <div class="plan-ribbon">MORE ROOM TO GROW</div>
-                <div class="plan-label">FOR YOUR NEXT MONEY GOAL</div>
-                <h2>Finance Freedom Plus</h2>
-                <div class="plan-price">£3.99 <span>/ month</span></div>
-                <p class="plan-summary">Extra tools for building better money habits.</p>
-                <ul class="plan-features">
-                    <li>Everything in Free</li>
-                    <li>Unlimited monthly category budgets</li>
-                    <li>Download your transactions as CSV</li>
-                    <li>Manage or cancel online at any time</li>
-                </ul>
-                @if (Model.Account is null)
+                @if (Model.Account?.IsPlus == true)
                 {
-                    <a class="btn btn-primary w-100" asp-page="/Account/Register" asp-route-returnUrl="/Plans">Create an account to upgrade</a>
-                }
-                else if (Model.Account.IsPlus)
-                {
-                    <form method="post" action="/billing/portal"><button class="btn btn-primary w-100" type="submit">Manage subscription</button></form>
-                    <div class="plan-current">You’re on Plus</div>
-                }
-                else if (Model.Account.StripeCustomerId is not null)
-                {
-                    <form method="post" action="/billing/portal"><button class="btn btn-primary w-100" type="submit">Manage billing</button></form>
-                    <div class="plan-current">Resolve your subscription in Stripe</div>
-                }
-                else
-                {
-                    <form method="post" action="/billing/checkout"><button class="btn btn-primary w-100" type="submit">Upgrade for £3.99/month</button></form>
-                    <div class="plan-current">Secure checkout powered by Stripe</div>
+                    <div class="plan-current mt-3">Your account has an existing Plus subscription. <a asp-page="/Account/Manage">Manage it in account settings.</a></div>
                 }
             </section>
         </div>
     </div>
-    <p class="plans-footnote">Payments are processed by Stripe. Finance Freedom does not receive or store your card number. Subscription status updates when Stripe sends a verified webhook.</p>
+    <p class="plans-footnote">No payment card is needed for the free plan. Ad delivery depends on site approval, consent choices, and availability.</p>
 </div>

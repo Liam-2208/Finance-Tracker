@@ -18,13 +18,10 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
     [BindProperty(SupportsGet = true)]
     public string WeekOf { get; set; } = GetMonday(DateTime.Today).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    [BindProperty]
     public TransactionInput Input { get; set; } = new();
 
-    [BindProperty]
     public TransactionInput EditInput { get; set; } = new();
 
-    [BindProperty]
     public BudgetInput BudgetForm { get; set; } = new();
 
     public DateTime SelectedMonth { get; private set; } = new(DateTime.Today.Year, DateTime.Today.Month, 1);
@@ -32,10 +29,6 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
     public DateTime SelectedWeek { get; private set; } = GetMonday(DateTime.Today);
 
     public bool Editing => EditInput.Id > 0;
-
-    public bool IsPlus { get; private set; }
-
-    public bool BudgetLimitReached { get; private set; }
 
     private string CurrentUserId => userManager.GetUserId(User) ?? string.Empty;
 
@@ -82,11 +75,12 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
         }
     }
 
-    public async Task<IActionResult> OnPostAddAsync()
+    public async Task<IActionResult> OnPostAddAsync([Bind(Prefix = "Input")] TransactionInput input)
     {
+        Input = input;
         NormalizeMonth();
         NormalizeWeek();
-        ValidateTransaction(Input, "Input");
+        ValidateTransaction(input, "Input");
 
         if (!ModelState.IsValid)
         {
@@ -94,18 +88,19 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
             return Page();
         }
 
-        var transaction = ToTransaction(Input);
+        var transaction = ToTransaction(input);
         transaction.UserId = CurrentUserId;
         database.Transactions.Add(transaction);
         await database.SaveChangesAsync();
         return RedirectToPage(new { month = Month, weekOf = WeekOf });
     }
 
-    public async Task<IActionResult> OnPostUpdateAsync()
+    public async Task<IActionResult> OnPostUpdateAsync([Bind(Prefix = "EditInput")] TransactionInput editInput)
     {
+        EditInput = editInput;
         NormalizeMonth();
         NormalizeWeek();
-        ValidateTransaction(EditInput, "EditInput");
+        ValidateTransaction(editInput, "EditInput");
 
         if (!ModelState.IsValid)
         {
@@ -114,17 +109,17 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
         }
 
         var transaction = await database.Transactions
-            .FirstOrDefaultAsync(item => item.Id == EditInput.Id && item.UserId == CurrentUserId);
+            .FirstOrDefaultAsync(item => item.Id == editInput.Id && item.UserId == CurrentUserId);
         if (transaction is null)
         {
             return NotFound();
         }
 
-        transaction.Date = EditInput.Date;
-        transaction.Description = EditInput.Description.Trim();
-        transaction.Category = EditInput.Category.Trim();
-        transaction.Type = EditInput.Type;
-        transaction.Amount = EditInput.Amount;
+        transaction.Date = editInput.Date;
+        transaction.Description = editInput.Description.Trim();
+        transaction.Category = editInput.Category.Trim();
+        transaction.Type = editInput.Type;
+        transaction.Amount = editInput.Amount;
         await database.SaveChangesAsync();
         return RedirectToPage(new { month = Month, weekOf = WeekOf });
     }
@@ -144,26 +139,25 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
         return RedirectToPage(new { month = Month, weekOf = WeekOf });
     }
 
-    public async Task<IActionResult> OnPostSaveBudgetAsync()
+    public async Task<IActionResult> OnPostSaveBudgetAsync([Bind(Prefix = "BudgetForm")] BudgetInput budgetForm)
     {
+        BudgetForm = budgetForm;
         NormalizeMonth();
         NormalizeWeek();
-        var account = await userManager.GetUserAsync(User);
-        IsPlus = account?.IsPlus == true;
-        BudgetForm.YearMonth = Month;
+        budgetForm.YearMonth = Month;
 
         if (!TryParseMonth(Month, out _))
         {
             Month = DateTime.Today.ToString("yyyy-MM", CultureInfo.InvariantCulture);
-            BudgetForm.YearMonth = Month;
+            budgetForm.YearMonth = Month;
         }
 
-        if (string.IsNullOrWhiteSpace(BudgetForm.Category))
+        if (string.IsNullOrWhiteSpace(budgetForm.Category))
         {
             ModelState.AddModelError("BudgetForm.Category", "Enter a category.");
         }
 
-        if (BudgetForm.LimitAmount <= 0)
+        if (budgetForm.LimitAmount <= 0)
         {
             ModelState.AddModelError("BudgetForm.LimitAmount", "Enter a budget greater than zero.");
         }
@@ -174,7 +168,7 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
             return Page();
         }
 
-        var category = BudgetForm.Category.Trim();
+        var category = budgetForm.Category.Trim();
         var existingBudgets = await database.Budgets
             .Where(budget => budget.YearMonth == Month && budget.UserId == CurrentUserId)
             .ToListAsync();
@@ -183,24 +177,17 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
 
         if (existing is null)
         {
-            if (!IsPlus && existingBudgets.Count >= 3)
-            {
-                ModelState.AddModelError(string.Empty, "The Free plan includes up to 3 category budgets per month. Plus unlocks unlimited budgets.");
-                await LoadMonthAsync();
-                return Page();
-            }
-
             database.Budgets.Add(new Budget
             {
                 YearMonth = Month,
                 Category = category,
-                LimitAmount = BudgetForm.LimitAmount,
+                LimitAmount = budgetForm.LimitAmount,
                 UserId = CurrentUserId
             });
         }
         else
         {
-            existing.LimitAmount = BudgetForm.LimitAmount;
+            existing.LimitAmount = budgetForm.LimitAmount;
         }
 
         await database.SaveChangesAsync();
@@ -226,11 +213,6 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
     {
         NormalizeMonth();
         NormalizeWeek();
-        var account = await userManager.GetUserAsync(User);
-        if (account?.IsPlus != true)
-        {
-            return RedirectToPage("/Plans");
-        }
         var transactions = await GetMonthTransactionsAsync();
         var csv = new StringBuilder();
         csv.AppendLine("Date,Description,Category,Type,Amount");
@@ -251,8 +233,6 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
     {
         NormalizeMonth();
         NormalizeWeek();
-        var account = await userManager.GetUserAsync(User);
-        IsPlus = account?.IsPlus == true;
         Transactions = await GetMonthTransactionsAsync();
         TotalIncome = Transactions.Where(item => item.Type == "Income").Sum(item => item.Amount);
         TotalSpending = Transactions.Where(item => item.Type == "Expense").Sum(item => item.Amount);
@@ -261,7 +241,6 @@ public class IndexModel(FinanceDbContext database, UserManager<ApplicationUser> 
             .Where(budget => budget.YearMonth == Month && budget.UserId == CurrentUserId)
             .OrderBy(budget => budget.Category)
             .ToListAsync();
-        BudgetLimitReached = !IsPlus && budgets.Count >= 3;
         var spendingByCategory = Transactions
             .Where(item => item.Type == "Expense")
             .GroupBy(item => item.Category.Trim(), StringComparer.OrdinalIgnoreCase)

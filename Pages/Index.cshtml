@@ -13,14 +13,7 @@
                     <h1>My finances<span>.</span></h1>
                     <p>A clear picture of what came in, what went out, and what’s left.</p>
                 </div>
-                @if (Model.IsPlus)
-                {
-                    <a class="btn export-button" asp-page-handler="ExportCsv" asp-route-month="@Model.Month" asp-route-weekOf="@Model.WeekOf"><span aria-hidden="true">↓</span> Export CSV</a>
-                }
-                else
-                {
-                    <a class="btn export-button" asp-page="/Plans"><span aria-hidden="true">✦</span> Unlock CSV export</a>
-                }
+                <a class="btn export-button" asp-page-handler="ExportCsv" asp-route-month="@Model.Month" asp-route-weekOf="@Model.WeekOf"><span aria-hidden="true">↓</span> Export CSV</a>
                 <div class="hero-orb hero-orb-one"></div>
                 <div class="hero-orb hero-orb-two"></div>
             </section>
@@ -191,14 +184,6 @@
             <div class="panel-card mb-4 budget-setup">
                 <div class="card-body">
                     <div class="section-heading mb-3"><div><span class="section-kicker">MAKE A PLAN</span><h2>Monthly category budget</h2><p>Set a limit for @Model.SelectedMonth.ToString("MMMM yyyy").</p></div></div>
-                    @if (!Model.IsPlus)
-                    {
-                        <p class="plan-limit-note">Free includes up to 3 category budgets each month. <a asp-page="/Plans">Plus unlocks unlimited budgets and CSV export.</a></p>
-                    }
-                    @if (Model.BudgetLimitReached)
-                    {
-                        <div class="billing-notice billing-notice-warn">You’ve reached the Free plan’s 3-budget limit. Upgrade to Plus to add another category budget.</div>
-                    }
                     <form method="post" asp-page-handler="SaveBudget" class="row g-3 align-items-end mb-4">
                         <input type="hidden" name="Month" value="@Model.Month" />
                         <input type="hidden" name="WeekOf" value="@Model.WeekOf" />

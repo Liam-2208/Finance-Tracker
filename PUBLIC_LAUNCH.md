@@ -36,6 +36,8 @@ The project includes a Dockerfile and a Render Blueprint in `render.yaml`. Rende
 
 The production configuration uses PostgreSQL with separate `accounts` and `finance` schemas in the same managed database. Local SQLite data files are deliberately excluded from the deployment image and source control; the hosted service starts with an empty database. Existing local accounts and entries are not migrated.
 
+Non-development startup now fails clearly if `Database__Provider=Postgres` is missing. This prevents production from silently writing signups and balances to an ephemeral SQLite file. Render Blueprint supplies both the provider and database URL.
+
 ## Before opening registration publicly
 
 - Replace the launch placeholder in the Privacy page with the operator's legal name, contact details, hosting region, retention schedule, and applicable privacy rights. Confirm the site's terms and the process for handling access/deletion requests.

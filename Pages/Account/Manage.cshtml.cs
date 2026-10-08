@@ -50,6 +50,14 @@ public class ManageModel(
             return Page();
         }
 
+        var deletion = await userManager.DeleteAsync(Account);
+        if (!deletion.Succeeded)
+        {
+            foreach (var error in deletion.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+            return Page();
+        }
+
         var transactions = await financeDatabase.Transactions.Where(item => item.UserId == Account.Id).ToListAsync();
         var budgets = await financeDatabase.Budgets.Where(item => item.UserId == Account.Id).ToListAsync();
         var bankConnections = await financeDatabase.BankConnections.Where(item => item.UserId == Account.Id).ToListAsync();
@@ -60,9 +68,8 @@ public class ManageModel(
         financeDatabase.BankLinkStates.RemoveRange(bankLinkStates);
         await financeDatabase.SaveChangesAsync();
 
-        await userManager.DeleteAsync(Account);
         await signInManager.SignOutAsync();
-        return RedirectToPage("/Index");
+        return RedirectToPage("/Home");
     }
 
     public class DeleteAccountInput

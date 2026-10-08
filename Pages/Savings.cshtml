@@ -1,22 +1,97 @@
 @page "/savings"
 @model PocketLedger.Pages.SavingsModel
-@{ ViewData["Title"] = "Savings"; }
-<div class="container page-shell py-5">
-    <div class="section-kicker">BUILD A BUFFER THAT FITS YOUR LIFE</div><h1 class="display-5 fw-bold">Your savings plan</h1>
-    <p class="lead text-muted">A simple estimate from the income and spending you’ve recorded. It isn’t a guarantee or financial advice.</p>
-    <form method="get" class="panel-card p-3 mb-4 savings-controls">
-        <label class="form-label" for="month">Month</label><input id="month" name="month" type="month" value="@Model.Month" class="form-control" />
-        <label class="form-label" for="rate">Savings goal (% of recorded income)</label><input id="rate" name="savingsRate" type="number" min="0" max="100" step="1" value="@Model.SavingsRate" class="form-control" />
-        <button class="btn btn-primary" type="submit">Update estimate</button>
-    </form>
-    <div class="row g-3 mb-4">
-        <div class="col-md-4"><div class="metric-card"><span>Recorded income</span><strong>@Model.Income.ToString("C")</strong><small>For @DateTime.ParseExact(Model.Month, "yyyy-MM", null).ToString("MMMM yyyy")</small></div></div>
-        <div class="col-md-4"><div class="metric-card"><span>Recorded spending</span><strong>@Model.Spending.ToString("C")</strong><small>From your transactions</small></div></div>
-        <div class="col-md-4"><div class="metric-card"><span>Left after recorded spending</span><strong>@Model.Remaining.ToString("C")</strong><small>This can differ from your real bank balance</small></div></div>
-    </div>
-    <section class="panel-card savings-result p-4">
-        <span class="section-kicker">YOUR SELECTED GOAL</span><h2>@Model.GoalAmount.ToString("C") this month</h2>
-        <p>At @Model.SavingsRate% of recorded income. @if (Model.AfterGoal >= 0) { <span>That would leave an estimated @Model.AfterGoal.ToString("C") after recorded spending and this goal.</span> } else { <span>Your selected goal is above the amount left after recorded spending. Lower the percentage or review your entries.</span> }</p>
-        <a class="btn btn-outline-primary" asp-page="/Index">Review transactions</a>
+@{
+    ViewData["Title"] = "Savings plan";
+    ViewData["Description"] = "Explore a realistic monthly savings pace from your recorded income and spending.";
+}
+<div class="container savings-shell py-4 py-lg-5">
+    <section class="savings-hero mb-4 mb-lg-5">
+        <div class="savings-hero-copy">
+            <span class="savings-eyebrow"><span></span> SMALL STEPS. MORE FREEDOM.</span>
+            <h1>Make room for<br /><em>what matters.</em></h1>
+            <p>Turn the money you’ve recorded into a savings pace that feels possible. Adjust the plan whenever life changes.</p>
+        </div>
+        <div class="savings-hero-art" aria-hidden="true">
+            <div class="savings-art-orbit orbit-one"></div><div class="savings-art-orbit orbit-two"></div>
+            <div class="savings-art-card"><span>THIS MONTH’S PACE</span><strong>@Model.SuggestedMonthlySavings.ToString("C")</strong><div class="savings-art-line"><i></i></div><small>One step at a time</small></div>
+            <div class="savings-art-spark">↗</div>
+        </div>
     </section>
+
+    <div class="savings-section-head">
+        <div><span class="section-kicker">YOUR PLAN, YOUR PACE</span><h2>Shape your monthly estimate</h2></div>
+        <span class="savings-month-pill">@Model.MonthLabel</span>
+    </div>
+    <form method="post" class="savings-planner mb-4 mb-lg-5">
+        <div class="savings-field"><label asp-for="Month">Month to review</label><input asp-for="Month" type="month" class="form-control" /></div>
+        <div class="savings-field"><label asp-for="SavingsRate">Income to set aside</label><div class="savings-input-wrap"><input asp-for="SavingsRate" type="number" min="0" max="100" step="1" class="form-control" /><span>%</span></div><small>Choose a percentage you could repeat.</small></div>
+        <div class="savings-field"><label asp-for="TargetAmount">Savings target</label><div class="savings-input-wrap"><span>£</span><input asp-for="TargetAmount" type="number" min="0" max="10000000" step="50" class="form-control" /></div><small>Used to estimate time to goal.</small></div>
+        <button type="submit" class="btn savings-update">Update plan <span aria-hidden="true">→</span></button>
+    </form>
+
+    @if (Model.Income == 0 && Model.Spending == 0)
+    {
+        <div class="savings-empty mb-4"><span aria-hidden="true">✦</span><div><h2>Your plan starts with your numbers</h2><p>There are no income or spending entries for @Model.MonthLabel yet. Add a few transactions to get a personal estimate.</p><a asp-page="/Index">Add transactions <span aria-hidden="true">→</span></a></div></div>
+    }
+
+    <div class="row g-3 savings-metrics mb-4 mb-lg-5">
+        <div class="col-md-4"><article class="savings-metric"><div class="savings-metric-label"><span class="metric-dot dot-income"></span> INCOME RECORDED</div><strong>@Model.Income.ToString("C")</strong><small>Money in during @Model.MonthLabel</small></article></div>
+        <div class="col-md-4"><article class="savings-metric"><div class="savings-metric-label"><span class="metric-dot dot-spend"></span> SPENDING RECORDED</div><strong>@Model.Spending.ToString("C")</strong><small>Money out during @Model.MonthLabel</small></article></div>
+        <div class="col-md-4"><article class="savings-metric savings-metric-highlight"><div class="savings-metric-label"><span class="metric-dot dot-left"></span> LEFT AFTER SPENDING</div><strong>@Model.Remaining.ToString("C")</strong><small>@(Model.Remaining >= 0 ? "Before your savings contribution" : "Spending is higher than recorded income")</small></article></div>
+    </div>
+
+    <div class="row g-4 align-items-stretch mb-4 mb-lg-5">
+        <div class="col-lg-7">
+            <section class="savings-goal-card h-100">
+                <div class="savings-goal-top"><span class="savings-goal-icon" aria-hidden="true">✳</span><span class="section-kicker">A STEADY SAVING RHYTHM</span></div>
+                <h2>@Model.SuggestedMonthlySavings.ToString("C")<span> / month</span></h2>
+                <p class="savings-goal-copy">Your selected @Model.SavingsRate% pace is @Model.GoalAmount.ToString("C") a month. The estimate above is capped at your recorded amount left after spending, so it won’t suggest saving more than this month’s surplus.</p>
+                <div class="savings-projection-grid">
+                    <div><span>Approx. each week</span><strong>@Model.WeeklyProjection.ToString("C")</strong></div>
+                    <div><span>Over 12 months</span><strong>@Model.YearlyProjection.ToString("C")</strong></div>
+                </div>
+                @if (Model.TargetAmount > 0)
+                {
+                    <div class="savings-target-note">
+                        @if (Model.MonthsToTarget is int months)
+                        {
+                            <span class="target-note-icon" aria-hidden="true">↗</span><p>At this pace, a <strong>@Model.TargetAmount.ToString("C")</strong> target could take about <strong>@months @(months == 1 ? "month" : "months")</strong>.</p>
+                        }
+                        else
+                        {
+                            <span class="target-note-icon" aria-hidden="true">↗</span><p>Add income and spending, or adjust the plan, to estimate how long a <strong>@Model.TargetAmount.ToString("C")</strong> target could take.</p>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <section class="savings-spending-card h-100">
+                <div class="savings-card-heading"><div><span class="section-kicker">A CLOSER LOOK</span><h2>Where it went</h2></div><span class="spending-card-icon" aria-hidden="true">⌁</span></div>
+                @if (Model.TopCategories.Count == 0)
+                {
+                    <p class="savings-no-categories">Your spending categories will appear here once you add expenses.</p>
+                }
+                else
+                {
+                    <div class="savings-category-list">
+                        @foreach (var category in Model.TopCategories)
+                        {
+                            var width = Model.LargestCategorySpend <= 0 ? 0 : (double)(category.Amount / Model.LargestCategorySpend * 100);
+                            <div class="savings-category"><div class="savings-category-label"><span>@category.Name</span><strong>@category.Amount.ToString("C")</strong></div><div class="savings-bar-track" role="img" aria-label="@category.Name spending: @category.Amount.ToString("C")"><span style="width:@width.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></span></div></div>
+                        }
+                    </div>
+                }
+                <a class="savings-detail-link" asp-page="/Index">Review all transactions <span aria-hidden="true">→</span></a>
+            </section>
+        </div>
+    </div>
+
+    <section class="savings-next-steps">
+        <div class="savings-next-intro"><span class="section-kicker">A KINDER WAY TO BUILD A HABIT</span><h2>Keep it realistic.</h2><p>A plan is useful when it fits your actual month, not an ideal one.</p></div>
+        <div class="savings-tip"><span>01</span><div><h3>Start with a repeatable amount</h3><p>A smaller contribution you can keep up is a strong start.</p></div></div>
+        <div class="savings-tip"><span>02</span><div><h3>Check the biggest category</h3><p>Look for one adjustment that feels manageable, not a perfect budget.</p></div></div>
+        <div class="savings-tip"><span>03</span><div><h3>Revisit after payday</h3><p>Update your entries when income or plans change.</p></div></div>
+    </section>
+    <p class="savings-disclaimer">Estimates use only the transactions you’ve recorded for the selected month. They don’t include bills or savings that haven’t been entered, and aren’t a prediction of your bank balance or financial advice.</p>
 </div>

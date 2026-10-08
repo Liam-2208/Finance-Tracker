@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 using Npgsql;
 using PocketLedger.Data;
 using PocketLedger.Models;
@@ -12,6 +14,11 @@ using PocketLedger.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 var usePostgres = string.Equals(builder.Configuration["Database:Provider"], "Postgres", StringComparison.OrdinalIgnoreCase);
+if (!builder.Environment.IsDevelopment() && !usePostgres)
+{
+    throw new InvalidOperationException(
+        "Production must use the managed PostgreSQL database. Configure Database__Provider=Postgres and Database__Postgres__Url to avoid storing account data on ephemeral local disk.");
+}
 var postgresConnection = usePostgres ? CreatePostgresConnectionString(builder.Configuration) : null;
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -22,17 +29,22 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var britishCulture = CultureInfo.GetCultureInfo("en-GB");
+    options.DefaultRequestCulture = new RequestCulture(britishCulture);
+    options.SupportedCultures = [britishCulture];
+    options.SupportedUICultures = [britishCulture];
+});
 
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizePage("/Index");
     options.Conventions.AuthorizePage("/Account/Manage");
     options.Conventions.AuthorizePage("/Savings");
-    options.Conventions.AuthorizePage("/Investments");
     options.Conventions.AuthorizePage("/Account/Logout");
     options.Conventions.AllowAnonymousToPage("/Account/Login");
     options.Conventions.AllowAnonymousToPage("/Account/Register");
-    options.Conventions.AllowAnonymousToPage("/Banking");
     options.Conventions.AllowAnonymousToPage("/Privacy");
     options.Conventions.AllowAnonymousToPage("/Plans");
 });
@@ -63,7 +75,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.SlidingExpiration = true;
     options.LoginPath = "/Account/Login";
@@ -101,6 +115,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseForwardedHeaders();
+app.UseRequestLocalization();
 app.Use(async (context, next) =>
 {
     context.Response.OnStarting(() =>

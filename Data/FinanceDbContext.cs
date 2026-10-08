@@ -19,6 +19,14 @@ public class FinanceDbContext(DbContextOptions<FinanceDbContext> options) : DbCo
         modelBuilder.Entity<Transaction>()
             .Property(transaction => transaction.Amount)
             .HasPrecision(12, 2);
+        if (Database.IsNpgsql())
+        {
+            // Transaction dates are calendar dates entered by users, not UTC instants.
+            // Keep the EF mapping aligned with DatabaseInitializer's PostgreSQL schema.
+            modelBuilder.Entity<Transaction>()
+                .Property(transaction => transaction.Date)
+                .HasColumnType("timestamp without time zone");
+        }
 
         modelBuilder.Entity<Budget>()
             .Property(budget => budget.LimitAmount)
