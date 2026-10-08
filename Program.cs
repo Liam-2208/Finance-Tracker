@@ -126,6 +126,18 @@ app.UseRateLimiter();
 StripeBillingEndpoints.Map(app);
 
 app.MapGet("/healthz", () => Results.Ok(new { status = "healthy" })).AllowAnonymous();
+app.MapGet("/ads.txt", (IConfiguration configuration) =>
+{
+    var publisherId = configuration["Advertising:PublisherId"];
+    if (publisherId is null || !publisherId.StartsWith("ca-pub-", StringComparison.Ordinal)
+        || publisherId.Length != 23 || !publisherId[7..].All(char.IsAsciiDigit))
+    {
+        return Results.NotFound();
+    }
+
+    var adsTxt = $"google.com, pub-{publisherId[7..]}, DIRECT, f08c47fec0942fa0\n";
+    return Results.Text(adsTxt, "text/plain; charset=utf-8");
+}).AllowAnonymous();
 
 app.MapStaticAssets();
 app.MapRazorPages()

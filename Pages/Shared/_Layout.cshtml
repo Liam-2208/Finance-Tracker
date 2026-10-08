@@ -11,10 +11,22 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FinanceFreedom.styles.css" asp-append-version="true" />
     @{
-        var adPublisher = Context.RequestServices.GetRequiredService<IConfiguration>()["Advertising:PublisherId"];
-        var adsEnabled = Context.RequestServices.GetRequiredService<IConfiguration>().GetValue<bool>("Advertising:Enabled") && Context.RequestServices.GetRequiredService<IConfiguration>().GetValue<bool>("Advertising:ConsentManagementPlatformConfigured");
+        var advertising = Context.RequestServices.GetRequiredService<IConfiguration>().GetSection("Advertising");
+        var adPublisher = advertising["PublisherId"];
+        var validPublisher = !string.IsNullOrWhiteSpace(adPublisher)
+            && adPublisher.StartsWith("ca-pub-", StringComparison.Ordinal)
+            && adPublisher.Length == 23
+            && adPublisher[7..].All(char.IsAsciiDigit);
+        var adsEnabled = advertising.GetValue<bool>("Enabled") && advertising.GetValue<bool>("ConsentManagementPlatformConfigured");
     }
-    @if (adsEnabled && ViewData["EnableAds"] is true && !string.IsNullOrWhiteSpace(adPublisher)) { <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@adPublisher" crossorigin="anonymous"></script> }
+    @if (validPublisher)
+    {
+        <meta name="google-adsense-account" content="@adPublisher" />
+        @if (adsEnabled && ViewData["EnableAds"] is true)
+        {
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@adPublisher" crossorigin="anonymous"></script>
+        }
+    }
 </head>
 <body>
     <header class="app-header">
@@ -27,6 +39,7 @@
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "active" : "")" asp-area="" asp-page="/Index">Overview</a>
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Savings" ? "active" : "")" asp-page="/Savings">Savings</a>
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Investments" ? "active" : "")" asp-page="/Investments">Investments</a>
+                <a class="nav-link" asp-page="/Guides">Guides</a>
                 @if (User.Identity?.IsAuthenticated == true) { <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Banking" ? "active" : "")" asp-page="/Banking">Bank cards</a> }
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Plans" ? "active" : "")" asp-area="" asp-page="/Plans">Plans</a>
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Privacy" ? "active" : "")" asp-area="" asp-page="/Privacy">Privacy</a>
@@ -52,7 +65,7 @@
     <footer class="app-footer">
         <div class="container d-flex justify-content-between flex-wrap gap-2">
             <span>&copy; 2026 Finance Freedom</span>
-            <span>Your money, with more freedom.</span>
+            <div class="footer-links"><a asp-page="/Guides">Money guides</a><a asp-page="/Privacy">Privacy</a></div>
         </div>
     </footer>
 

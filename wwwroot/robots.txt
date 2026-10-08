@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /account/
+Disallow: /overview
+Disallow: /savings
+Disallow: /investments
+Disallow: /banking

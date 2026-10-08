@@ -1,0 +1,85 @@
+@page "/guides"
+@model PocketLedger.Pages.GuidesModel
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Practical budgeting guide";
+    ViewData["Description"] = "A practical guide to building a personal budget, planning for weekly or irregular income, and setting a realistic savings goal.";
+    ViewData["EnableAds"] = Model.ShowAds;
+}
+<article class="container policy-shell py-5 guide-page">
+    <header class="guide-hero">
+        <span class="section-kicker">FINANCE FREEDOM · MONEY BASICS</span>
+        <h1>A practical guide to building a budget that works</h1>
+        <p class="lead">A useful budget is a plan you can keep adjusting. Start with the money you actually receive and spend, leave room for irregular costs, and choose one small next step.</p>
+        <p class="guide-meta">A 6 minute read · Educational information, not personal financial advice</p>
+    </header>
+
+    <div class="guide-content">
+        <section>
+            <h2>1. Start with take-home income</h2>
+            <p>Use the amount that reaches your account after tax and other deductions. If your pay changes from month to month, begin with a lower, typical month rather than assuming your best month will repeat. This makes the plan less likely to depend on money that may not arrive.</p>
+            <p>For weekly pay, a simple monthly estimate is weekly take-home pay multiplied by 52 and divided by 12. Keep the weekly figure too: comparing weekly bills against weekly pay can make cash-flow timing easier to see. Treat this conversion as an estimate, since pay dates and the number of paydays in a calendar month vary.</p>
+        </section>
+
+        <section>
+            <h2>2. List spending in a few clear groups</h2>
+            <p>Review recent statements or receipts and group purchases into categories that make sense to you. A useful starting point is essentials, flexible spending, and future goals. You can split these further when a category is large enough to help you make a decision.</p>
+            <ul>
+                <li><strong>Regular essentials:</strong> housing, utilities, transport, insurance, and minimum debt payments.</li>
+                <li><strong>Flexible costs:</strong> groceries, eating out, clothing, and entertainment.</li>
+                <li><strong>Less frequent costs:</strong> annual renewals, repairs, gifts, and seasonal expenses.</li>
+                <li><strong>Goals:</strong> an emergency buffer, a planned purchase, or extra debt repayments.</li>
+            </ul>
+            <p>Use your own records instead of aiming for a perfect category system. If a purchase could fit in two places, choose one rule and apply it consistently so your comparisons stay useful.</p>
+        </section>
+
+        @if (Model.ShowAds)
+        {
+            var advertising = Configuration.GetSection("Advertising");
+            var publisherId = advertising["PublisherId"];
+            var slotId = advertising["GuidesSlotId"];
+            var canShowGuideAd = advertising.GetValue<bool>("Enabled")
+                && advertising.GetValue<bool>("ConsentManagementPlatformConfigured")
+                && publisherId is not null && publisherId.StartsWith("ca-pub-", StringComparison.Ordinal)
+                && publisherId.Length == 23 && publisherId[7..].All(char.IsAsciiDigit)
+                && slotId is not null && slotId.Length > 0 && slotId.All(char.IsAsciiDigit);
+            if (canShowGuideAd)
+            {
+                <aside class="ad-placement guide-ad" aria-label="Advertisement">
+                    <span>ADVERTISEMENT</span>
+                    <ins class="adsbygoogle" style="display:block" data-ad-client="@publisherId" data-ad-slot="@slotId" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                    <script>window.adsbygoogle = window.adsbygoogle || []; window.adsbygoogle.push({});</script>
+                </aside>
+            }
+        }
+
+        <section>
+            <h2>3. Plan for bills that do not arrive every month</h2>
+            <p>Annual and occasional expenses can make an otherwise sensible month feel like a failure. Write down the cost and due date when you know them. Divide the amount by the number of pay periods left before it is due, then set that amount aside each payday if you can.</p>
+            <p>For example, if an annual bill is £240 and there are 12 months until it is due, setting aside £20 a month would cover it on schedule. The right amount depends on your own dates and available money; the calculation is a planning aid, not a guarantee.</p>
+        </section>
+
+        <section>
+            <h2>4. Choose a savings amount you can repeat</h2>
+            <p>First compare take-home income with essential costs and minimum commitments. Then consider an amount you could put aside without relying on credit or leaving a bill unpaid. Starting small and reviewing the plan regularly can be more practical than choosing a target that only works in an unusually good month.</p>
+            <p>If your income is irregular, you might choose a baseline contribution and add more in higher-income periods after essential costs are covered. Keep planned savings separate in your budget from money already spent; a budget estimate is not the same as a bank balance.</p>
+        </section>
+
+        <section>
+            <h2>5. Review the plan once a week</h2>
+            <p>A brief weekly check-in can help catch timing problems early. Compare what you recorded with your plan, look ahead to the next bills and pay date, and adjust a flexible category if something changed. Avoid treating a budget as a score: the point is to help you decide what to do next.</p>
+            <ol>
+                <li>Record income and spending in a consistent way.</li>
+                <li>Check upcoming bills against the money expected before they are due.</li>
+                <li>Update one category or goal when your circumstances change.</li>
+            </ol>
+        </section>
+
+        <section class="guide-next-step">
+            <h2>Make the plan your own</h2>
+            <p>Finance Freedom lets you record transactions, compare spending by category, and estimate a savings goal from the information you enter. Your results depend on the accuracy and completeness of those entries.</p>
+            <a class="btn btn-primary" asp-page="/Account/Register">Start a free account</a>
+            <a class="btn btn-outline-primary ms-2" asp-page="/Privacy">Read the privacy notice</a>
+        </section>
+    </div>
+</article>
