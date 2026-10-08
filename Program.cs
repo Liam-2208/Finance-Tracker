@@ -181,7 +181,9 @@ static string CreatePostgresConnectionString(IConfiguration configuration, strin
     {
         var credentials = uri.UserInfo.Split(':', 2);
         builder.Host = uri.Host;
-        builder.Port = uri.Port;
+        // PostgreSQL URLs commonly omit the port; Uri.Port then returns -1.
+        // Npgsql requires a valid port, so use PostgreSQL's default in that case.
+        builder.Port = uri.IsDefaultPort ? 5432 : uri.Port;
         builder.Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/'));
         builder.Username = Uri.UnescapeDataString(credentials[0]);
         builder.Password = credentials.Length > 1 ? Uri.UnescapeDataString(credentials[1]) : string.Empty;
