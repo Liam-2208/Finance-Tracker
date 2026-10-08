@@ -17,15 +17,11 @@
             && adPublisher.StartsWith("ca-pub-", StringComparison.Ordinal)
             && adPublisher.Length == 23
             && adPublisher[7..].All(char.IsAsciiDigit);
-        var adsEnabled = advertising.GetValue<bool>("Enabled") && advertising.GetValue<bool>("ConsentManagementPlatformConfigured");
     }
     @if (validPublisher)
     {
         <meta name="google-adsense-account" content="@adPublisher" />
-        @if (adsEnabled && ViewData["EnableAds"] is true)
-        {
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@adPublisher" crossorigin="anonymous"></script>
-        }
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@adPublisher" crossorigin="anonymous"></script>
     }
 </head>
 <body>
