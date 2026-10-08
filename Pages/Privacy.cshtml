@@ -1,0 +1,46 @@
+@page
+@model PrivacyModel
+@{
+    ViewData["Title"] = "Privacy";
+}
+
+<div class="container policy-shell py-5">
+    <article class="policy-card">
+        <span class="section-kicker">YOUR DATA, YOUR CHOICE</span>
+        <h1>Privacy at Finance Freedom</h1>
+        <p class="policy-updated">Plain-language privacy notice · Updated 8 October 2026</p>
+
+        <div class="policy-callout">
+            <strong>Your financial entries are private to your account.</strong>
+            <span>Finance Freedom uses them to provide your personal budget and reports. They are not sent to Stripe.</span>
+        </div>
+
+        <h2>Information this app uses</h2>
+        <ul>
+            <li><strong>Account details:</strong> your email address and a securely hashed password for sign-in.</li>
+            <li><strong>Finance entries:</strong> transaction dates, descriptions, categories, types, amounts, and budgets you choose to enter.</li>
+            <li><strong>Plan details:</strong> your plan and subscription status. If you subscribe, Stripe also provides a customer and subscription reference.</li>
+            <li><strong>Basic technical data:</strong> the app uses an authentication cookie to keep you signed in and security features to protect account forms.</li>
+        </ul>
+
+        <h2>How information is used</h2>
+        <p>Your account and finance entries are used to show your dashboard, calculate weekly and monthly summaries, save budgets, and provide features you request. Finance Freedom only serves ads after consent and required publisher setup.</p>
+        <p>Bank connections are optional and use the provider's hosted consent flow. Finance Freedom stores only the provider account/card reference, display label, network, type, and available last four digits. It does not store full card or account numbers and does not import transactions. You can remove a saved connection and revoke provider access with your bank.</p>
+        <p>Free plan ads are disabled until the site operator has an approved publisher account and configured a certified consent platform for the regions served. Advertising identifiers and cookie use depend on those settings and your consent.</p>
+
+        <h2>Payments</h2>
+        <p>Subscriptions are handled by Stripe Checkout. Stripe processes payment details and sends Finance Freedom the subscription status needed to enable or disable Plus. Finance Freedom does not receive or store your full payment card number. Finance descriptions and transaction amounts are not shared with Stripe.</p>
+
+        <h2>Storage and security</h2>
+        <p>When run locally, the app uses separate SQLite files for account and finance data. The included public-hosting configuration uses a managed PostgreSQL database with separate account and finance schemas. Finance records are queried using the signed-in account ID. Authentication cookies use ASP.NET Identity and data-protection keys are persisted in the database so sessions survive service restarts.</p>
+        <p>Hosting, backups, and database access are managed by the site operator. No online service can promise absolute security. The operator should publish its legal identity, contact details, hosting region, retention schedule, and data request process before accepting public registrations.</p>
+
+        <h2>Your choices</h2>
+        <p>You can review your plan in Account settings. You can cancel Plus through Stripe’s billing portal. You can permanently delete your Finance Freedom account, transactions, and budgets from Account settings. Stripe may retain payment records under its own legal and privacy obligations.</p>
+        <p>For a data access or privacy request, use the contact details provided by the operator of the Finance Freedom site you signed up with.</p>
+
+        <h2>Contact and data requests</h2>
+        <p>Before opening public registration, the site operator must replace this launch notice with its legal name, contact address, hosting location, retention periods, and applicable jurisdiction-specific rights. Until those details are published, do not enter real financial information.</p>
+        <a class="btn btn-outline-primary mt-3" asp-page="/Account/Manage">Go to account settings</a>
+    </article>
+</div>

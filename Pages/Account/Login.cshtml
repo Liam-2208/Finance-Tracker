@@ -1,0 +1,23 @@
+@page "/account/login"
+@model PocketLedger.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<div class="container account-shell py-5">
+    <div class="account-card">
+        <span class="section-kicker">WELCOME BACK</span>
+        <h1>Sign in</h1>
+        <p class="account-intro">Pick up where you left off.</p>
+        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <div class="mb-3"><label asp-for="Input.Email" class="form-label">Email address</label><input asp-for="Input.Email" class="form-control" autocomplete="email" /><span asp-validation-for="Input.Email" class="text-danger"></span></div>
+            <div class="mb-3"><label asp-for="Input.Password" class="form-label">Password</label><input asp-for="Input.Password" class="form-control" autocomplete="current-password" /><span asp-validation-for="Input.Password" class="text-danger"></span></div>
+            <div class="form-check mb-4"><input asp-for="Input.RememberMe" class="form-check-input" /><label asp-for="Input.RememberMe" class="form-check-label">Keep me signed in</label></div>
+            <button type="submit" class="btn btn-primary w-100">Sign in</button>
+        </form>
+        <p class="account-switch">New to Finance Freedom? <a asp-page="/Account/Register">Create an account</a></p>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

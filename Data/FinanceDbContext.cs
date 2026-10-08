@@ -1,0 +1,27 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using PocketLedger.Models;
+
+namespace PocketLedger.Data;
+
+public class FinanceDbContext(DbContextOptions<FinanceDbContext> options) : DbContext(options), IDataProtectionKeyContext
+{
+    public DbSet<Transaction> Transactions => Set<Transaction>();
+
+    public DbSet<Budget> Budgets => Set<Budget>();
+    public DbSet<BankConnection> BankConnections => Set<BankConnection>();
+    public DbSet<BankLinkState> BankLinkStates => Set<BankLinkState>();
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        if (Database.IsNpgsql()) modelBuilder.HasDefaultSchema("finance");
+        modelBuilder.Entity<Transaction>()
+            .Property(transaction => transaction.Amount)
+            .HasPrecision(12, 2);
+
+        modelBuilder.Entity<Budget>()
+            .Property(budget => budget.LimitAmount)
+            .HasPrecision(12, 2);
+    }
+}

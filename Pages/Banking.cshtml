@@ -1,0 +1,23 @@
+@page "/banking"
+@model PocketLedger.Pages.BankingModel
+@{ ViewData["Title"] = "Bank connections"; }
+<div class="container page-shell py-5">
+    <div class="section-kicker">OPTIONAL · READ-ONLY CONNECTION</div><h1 class="display-5 fw-bold">Bank cards</h1>
+    <p class="lead text-muted">Connect through your bank’s secure consent screen. Finance Freedom never asks for your banking password or full card number.</p>
+    @if (!string.IsNullOrEmpty(Model.Message)) { <div class="alert alert-success">@Model.Message</div> }
+    @if (!string.IsNullOrEmpty(Model.Error)) { <div class="alert alert-warning">@Model.Error</div> }
+    <section class="panel-card p-4 mb-4">
+        <h2 class="h4">Connect a card</h2>
+        <p class="text-muted">You’ll be redirected to TrueLayer and your bank to review permissions. You can remove a saved connection here and revoke bank consent with your bank.</p>
+        @if (Model.IsConfigured) { <form method="post" asp-page-handler="Connect"><button class="btn btn-primary" type="submit">Continue to secure bank connection</button></form> }
+        else { <div class="feed-setup p-3"><strong>Bank connection needs provider setup.</strong><p>Configure Banking:ClientId, Banking:ClientSecret, Banking:RedirectUri and Banking:Environment in server secrets, then register the exact callback URL with TrueLayer.</p></div> }
+    </section>
+    <div class="section-heading mb-3"><div><span class="section-kicker">YOUR CONNECTIONS</span><h2>Connected accounts &amp; cards</h2></div></div>
+    @if (Model.Connections.Count == 0) { <div class="panel-card p-4 text-muted">No bank accounts or cards are connected.</div> }
+    @foreach (var card in Model.Connections)
+    {
+        <article class="news-card bank-card-row"><div><small>@(card.Network ?? card.Provider) · @card.ConnectedAt.ToLocalTime().ToString("dd MMM yyyy")</small><h3>@card.DisplayName @(card.LastFour is null ? "" : $"•••• {card.LastFour}")</h3><small>@(card.CardType ?? "Card") · read-only permission</small></div>
+            <form method="post" asp-page-handler="Disconnect"><input type="hidden" name="id" value="@card.Id" /><button class="btn btn-sm btn-outline-secondary" type="submit">Remove</button></form></article>
+    }
+    <p class="market-disclaimer mt-4">Connected card summaries are held to show which cards you linked. Transaction import is not enabled. Removing a card deletes its local connection record; also revoke access with your bank to end provider consent.</p>
+</div>

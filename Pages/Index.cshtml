@@ -1,0 +1,256 @@
+@page "/overview"
+@model IndexModel
+@{
+    ViewData["Title"] = "Transactions";
+}
+
+<div class="container dashboard-shell py-4 py-lg-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <section class="dashboard-hero mb-4 mb-lg-5">
+                <div class="hero-copy">
+                    <div class="eyebrow"><span class="eyebrow-dot"></span> YOUR MONEY, IN FOCUS</div>
+                    <h1>My finances<span>.</span></h1>
+                    <p>A clear picture of what came in, what went out, and what’s left.</p>
+                </div>
+                @if (Model.IsPlus)
+                {
+                    <a class="btn export-button" asp-page-handler="ExportCsv" asp-route-month="@Model.Month" asp-route-weekOf="@Model.WeekOf"><span aria-hidden="true">↓</span> Export CSV</a>
+                }
+                else
+                {
+                    <a class="btn export-button" asp-page="/Plans"><span aria-hidden="true">✦</span> Unlock CSV export</a>
+                }
+                <div class="hero-orb hero-orb-one"></div>
+                <div class="hero-orb hero-orb-two"></div>
+            </section>
+
+            <div class="month-toolbar mb-4">
+                <a class="month-arrow" asp-route-month="@Model.SelectedMonth.AddMonths(-1).ToString("yyyy-MM")" asp-route-weekOf="@Model.WeekOf" aria-label="Previous month">←</a>
+                <form method="get" class="month-picker">
+                    <input type="hidden" name="WeekOf" value="@Model.WeekOf" />
+                    <span class="month-label">MONTHLY OVERVIEW</span>
+                    <label for="month" class="visually-hidden">Choose month</label>
+                    <input id="month" type="month" name="month" value="@Model.Month" class="form-control" />
+                    <button class="btn month-go" type="submit">View month</button>
+                </form>
+                <a class="month-arrow" asp-route-month="@Model.SelectedMonth.AddMonths(1).ToString("yyyy-MM")" asp-route-weekOf="@Model.WeekOf" aria-label="Next month">→</a>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="metric-card metric-income h-100">
+                        <div class="metric-top"><span class="metric-icon">↗</span><span class="metric-caption">MONEY IN</span></div>
+                        <div class="metric-value">@Model.TotalIncome.ToString("C")</div>
+                        <div class="metric-foot">Income this month</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="metric-card metric-spending h-100">
+                        <div class="metric-top"><span class="metric-icon">↘</span><span class="metric-caption">MONEY OUT</span></div>
+                        <div class="metric-value">@Model.TotalSpending.ToString("C")</div>
+                        <div class="metric-foot">Spending this month</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="metric-card metric-net h-100">
+                        <div class="metric-top"><span class="metric-icon">＝</span><span class="metric-caption">YOUR BALANCE</span></div>
+                        <div class="metric-value">@Model.NetTotal.ToString("C")</div>
+                        <div class="metric-foot">Left over in @Model.SelectedMonth.ToString("MMMM")</div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="weekly-overview mb-4" aria-labelledby="weekly-heading">
+                <div class="weekly-heading-row">
+                    <div>
+                        <span class="section-kicker">WEEKLY PAY &amp; SPENDING</span>
+                        <h2 id="weekly-heading">Weekly overview</h2>
+                        <p>@Model.SelectedWeek.ToString("d MMM") – @Model.SelectedWeek.AddDays(6).ToString("d MMM yyyy") <span class="week-note">· Monday to Sunday</span></p>
+                    </div>
+                    <form method="get" class="week-picker">
+                        <input type="hidden" name="Month" value="@Model.Month" />
+                        <label for="weekOf">Choose a date in the week</label>
+                        <div class="d-flex gap-2">
+                            <input id="weekOf" type="date" name="WeekOf" value="@Model.WeekOf" class="form-control" />
+                            <button class="btn month-go" type="submit">View week</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="weekly-stats">
+                    <div class="weekly-stat weekly-income"><span class="week-symbol">↗</span><div><span>INCOME THIS WEEK</span><strong>@Model.WeeklyIncome.ToString("C")</strong></div></div>
+                    <div class="weekly-stat weekly-spending"><span class="week-symbol">↘</span><div><span>SPENDING THIS WEEK</span><strong>@Model.WeeklySpending.ToString("C")</strong></div></div>
+                    <div class="weekly-stat weekly-net"><span class="week-symbol">＝</span><div><span>WEEKLY BALANCE</span><strong>@Model.WeeklyNet.ToString("C")</strong></div></div>
+                </div>
+                <p class="weekly-hint">Add income transactions with their pay date to include weekly pay in this total.</p>
+            </section>
+
+            @if (Model.Editing)
+            {
+                <div class="panel-card edit-panel mb-4">
+                    <div class="card-body">
+                        <div class="section-heading mb-3"><div><span class="section-kicker">MAKE A CHANGE</span><h2>Edit transaction</h2></div><span class="section-icon">✎</span></div>
+                        <form method="post" asp-page-handler="Update">
+                            <input type="hidden" asp-for="EditInput.Id" />
+                            <input type="hidden" name="Month" value="@Model.Month" />
+                            <input type="hidden" name="WeekOf" value="@Model.WeekOf" />
+                            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                            <div class="row g-3">
+                                <div class="col-sm-6 col-lg-2"><label asp-for="EditInput.Date" class="form-label">Date</label><input asp-for="EditInput.Date" class="form-control" /></div>
+                                <div class="col-sm-6 col-lg-2"><label asp-for="EditInput.Type" class="form-label">Type</label><select asp-for="EditInput.Type" class="form-select"><option>Expense</option><option>Income</option></select></div>
+                                <div class="col-sm-6 col-lg-2"><label asp-for="EditInput.Category" class="form-label">Category</label><input asp-for="EditInput.Category" class="form-control" /></div>
+                                <div class="col-sm-6 col-lg-2"><label asp-for="EditInput.Amount" class="form-label">Amount</label><input asp-for="EditInput.Amount" type="number" min="0.01" step="0.01" class="form-control" /></div>
+                                <div class="col-sm-12 col-lg-4"><label asp-for="EditInput.Description" class="form-label">Description</label><input asp-for="EditInput.Description" class="form-control" /></div>
+                                <div class="col-12 d-flex gap-2"><button type="submit" class="btn btn-primary">Save changes</button><a asp-route-month="@Model.Month" asp-route-weekOf="@Model.WeekOf" class="btn btn-outline-secondary">Cancel</a></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="panel-card add-panel mb-4">
+                    <div class="card-body">
+                        <div class="section-heading mb-4"><div><span class="section-kicker">KEEP IT UP TO DATE</span><h2>Add a transaction</h2></div><span class="section-icon">＋</span></div>
+                        <form method="post" asp-page-handler="Add">
+                            <input type="hidden" name="Month" value="@Model.Month" />
+                            <input type="hidden" name="WeekOf" value="@Model.WeekOf" />
+                            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                            <div class="row g-3">
+                                <div class="col-sm-6 col-lg-2"><label asp-for="Input.Date" class="form-label">Date</label><input asp-for="Input.Date" class="form-control" /><span asp-validation-for="Input.Date" class="text-danger"></span></div>
+                                <div class="col-sm-6 col-lg-2"><label asp-for="Input.Type" class="form-label">Type</label><select asp-for="Input.Type" class="form-select"><option>Expense</option><option>Income</option></select></div>
+                                <div class="col-sm-6 col-lg-2"><label asp-for="Input.Category" class="form-label">Category</label><input asp-for="Input.Category" class="form-control" placeholder="e.g. Food" /><span asp-validation-for="Input.Category" class="text-danger"></span></div>
+                                <div class="col-sm-6 col-lg-2"><label asp-for="Input.Amount" class="form-label">Amount</label><input asp-for="Input.Amount" type="number" min="0.01" step="0.01" class="form-control" placeholder="0.00" /><span asp-validation-for="Input.Amount" class="text-danger"></span></div>
+                                <div class="col-sm-12 col-lg-4"><label asp-for="Input.Description" class="form-label">Description</label><input asp-for="Input.Description" class="form-control" placeholder="What was this for?" /><span asp-validation-for="Input.Description" class="text-danger"></span></div>
+                                <div class="col-12"><button type="submit" class="btn btn-primary">Add transaction</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <div class="panel-card mb-4">
+                <div class="card-body">
+                    <div class="section-heading mb-3"><div><span class="section-kicker">SPENDING PLAN</span><h2>Category spending</h2></div></div>
+                    @if (Model.CategorySummaries.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No spending or budgets for this month yet.</p>
+                    }
+                    else
+                    {
+                        var totalCategorySpend = Model.CategorySummaries.Sum(category => category.Spent);
+                        <div class="category-chart mb-4" aria-label="Spending by category">
+                            @foreach (var category in Model.CategorySummaries.Where(category => category.Spent > 0).OrderByDescending(category => category.Spent))
+                            {
+                                var share = totalCategorySpend == 0 ? 0 : (double)(category.Spent / totalCategorySpend * 100);
+                                <div class="category-chart-row"><div><strong>@category.Category</strong><span>@category.Spent.ToString("C") · @share.ToString("0")%</span></div><div class="category-track" role="img" aria-label="@category.Category, @share.ToString("0") percent of spending"><span style="width:@share.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></span></div></div>
+                            }
+                        </div>
+                        <div class="table-responsive"><table class="table finance-table budget-table align-middle mb-0">
+                            <thead><tr><th>Category</th><th class="text-end">Spent</th><th class="text-end">Monthly budget</th><th style="min-width: 180px">Progress</th><th>Actions</th></tr></thead>
+                            <tbody>
+                            @foreach (var item in Model.CategorySummaries)
+                            {
+                                var overBudget = item.BudgetLimit.HasValue && item.Spent > item.BudgetLimit.Value;
+                                <tr>
+                                    <td>@item.Category</td>
+                                    <td class="text-end">@item.Spent.ToString("C")</td>
+                                    <td class="text-end">@(item.BudgetLimit?.ToString("C") ?? "—")</td>
+                                    <td>
+                                        @if (item.BudgetLimit.HasValue)
+                                        {
+                                            <div class="progress" role="progressbar" aria-label="Budget used for @item.Category" aria-valuenow="@Math.Min(100, item.PercentUsed)" aria-valuemin="0" aria-valuemax="100">
+                                                <div class="progress-bar @(overBudget ? "bg-danger" : "bg-success")" style="width: @item.PercentUsed.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                                            </div>
+                                            <small class="@(overBudget ? "text-danger" : "text-muted")">@item.Spent.ToString("C") of @item.BudgetLimit.Value.ToString("C")</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No budget set</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.BudgetId.HasValue)
+                                        {
+                                            <form method="post" asp-page-handler="DeleteBudget" onsubmit="return confirm('Remove this monthly budget?');">
+                                                <input type="hidden" name="id" value="@item.BudgetId.Value" />
+                                                <input type="hidden" name="Month" value="@Model.Month" />
+                                                <input type="hidden" name="WeekOf" value="@Model.WeekOf" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Remove budget</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table></div>
+                    }
+                </div>
+            </div>
+
+            <div class="panel-card mb-4 budget-setup">
+                <div class="card-body">
+                    <div class="section-heading mb-3"><div><span class="section-kicker">MAKE A PLAN</span><h2>Monthly category budget</h2><p>Set a limit for @Model.SelectedMonth.ToString("MMMM yyyy").</p></div></div>
+                    @if (!Model.IsPlus)
+                    {
+                        <p class="plan-limit-note">Free includes up to 3 category budgets each month. <a asp-page="/Plans">Plus unlocks unlimited budgets and CSV export.</a></p>
+                    }
+                    @if (Model.BudgetLimitReached)
+                    {
+                        <div class="billing-notice billing-notice-warn">You’ve reached the Free plan’s 3-budget limit. Upgrade to Plus to add another category budget.</div>
+                    }
+                    <form method="post" asp-page-handler="SaveBudget" class="row g-3 align-items-end mb-4">
+                        <input type="hidden" name="Month" value="@Model.Month" />
+                        <input type="hidden" name="WeekOf" value="@Model.WeekOf" />
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <div class="col-sm-6 col-md-5"><label asp-for="BudgetForm.Category" class="form-label">Category</label><input asp-for="BudgetForm.Category" class="form-control" placeholder="e.g. Food" /><span asp-validation-for="BudgetForm.Category" class="text-danger"></span></div>
+                        <div class="col-sm-6 col-md-4"><label asp-for="BudgetForm.LimitAmount" class="form-label">Monthly limit</label><input asp-for="BudgetForm.LimitAmount" type="number" min="0.01" step="0.01" class="form-control" placeholder="0.00" /><span asp-validation-for="BudgetForm.LimitAmount" class="text-danger"></span></div>
+                        <div class="col-md-3"><button type="submit" class="btn btn-primary">Save budget</button></div>
+                    </form>
+                    <p class="small text-muted mb-0">Saving a category again updates its budget for this month.</p>
+                </div>
+            </div>
+
+            <div class="panel-card transactions-panel">
+                <div class="card-body">
+                    <div class="section-heading mb-3"><div><span class="section-kicker">THE DETAILS</span><h2>Transactions</h2><p>@Model.SelectedMonth.ToString("MMMM yyyy")</p></div><span class="transaction-count">@Model.Transactions.Count entries</span></div>
+                    @if (Model.Transactions.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No transactions for this month. Add one above to get started.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive"><table class="table finance-table align-middle mb-0">
+                            <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th class="text-end">Amount</th><th>Actions</th></tr></thead>
+                            <tbody>
+                            @foreach (var transaction in Model.Transactions)
+                            {
+                                <tr>
+                                    <td>@transaction.Date.ToString("d")</td>
+                                    <td>@transaction.Description</td>
+                                    <td>@transaction.Category</td>
+                                    <td><span class="badge @(transaction.Type == "Income" ? "text-bg-success" : "text-bg-secondary")">@transaction.Type</span></td>
+                                    <td class="text-end fw-semibold @(transaction.Type == "Income" ? "text-success" : "text-danger")">@transaction.Amount.ToString("C")</td>
+                                    <td class="text-nowrap">
+                                        <a class="btn btn-sm btn-outline-primary" asp-route-month="@Model.Month" asp-route-weekOf="@Model.WeekOf" asp-route-editId="@transaction.Id">Edit</a>
+                                        <form method="post" asp-page-handler="Delete" class="d-inline" onsubmit="return confirm('Delete this transaction?');">
+                                            <input type="hidden" name="id" value="@transaction.Id" />
+                                            <input type="hidden" name="Month" value="@Model.Month" />
+                                            <input type="hidden" name="WeekOf" value="@Model.WeekOf" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table></div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

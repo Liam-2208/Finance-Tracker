@@ -1,0 +1,34 @@
+@page "/savings"
+@model PocketLedger.Pages.SavingsModel
+@inject IConfiguration Configuration
+@{ ViewData["Title"] = "Savings"; ViewData["EnableAds"] = !Model.IsPlus; }
+<div class="container page-shell py-5">
+    <div class="section-kicker">BUILD A BUFFER THAT FITS YOUR LIFE</div><h1 class="display-5 fw-bold">Your savings plan</h1>
+    <p class="lead text-muted">A simple estimate from the income and spending you’ve recorded. It isn’t a guarantee or financial advice.</p>
+    <form method="get" class="panel-card p-3 mb-4 savings-controls">
+        <label class="form-label" for="month">Month</label><input id="month" name="month" type="month" value="@Model.Month" class="form-control" />
+        <label class="form-label" for="rate">Savings goal (% of recorded income)</label><input id="rate" name="savingsRate" type="number" min="0" max="100" step="1" value="@Model.SavingsRate" class="form-control" />
+        <button class="btn btn-primary" type="submit">Update estimate</button>
+    </form>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="metric-card"><span>Recorded income</span><strong>@Model.Income.ToString("C")</strong><small>For @DateTime.ParseExact(Model.Month, "yyyy-MM", null).ToString("MMMM yyyy")</small></div></div>
+        <div class="col-md-4"><div class="metric-card"><span>Recorded spending</span><strong>@Model.Spending.ToString("C")</strong><small>From your transactions</small></div></div>
+        <div class="col-md-4"><div class="metric-card"><span>Left after recorded spending</span><strong>@Model.Remaining.ToString("C")</strong><small>This can differ from your real bank balance</small></div></div>
+    </div>
+    <section class="panel-card savings-result p-4">
+        <span class="section-kicker">YOUR SELECTED GOAL</span><h2>@Model.GoalAmount.ToString("C") this month</h2>
+        <p>At @Model.SavingsRate% of recorded income. @if (Model.AfterGoal >= 0) { <span>That would leave an estimated @Model.AfterGoal.ToString("C") after recorded spending and this goal.</span> } else { <span>Your selected goal is above the amount left after recorded spending. Lower the percentage or review your entries.</span> }</p>
+        <a class="btn btn-outline-primary" asp-page="/Index">Review transactions</a>
+    </section>
+    @if (!Model.IsPlus)
+    {
+        var publisherId = Configuration["Advertising:PublisherId"];
+        var slotId = Configuration["Advertising:SavingsSlotId"];
+        if (Configuration.GetValue<bool>("Advertising:Enabled") && Configuration.GetValue<bool>("Advertising:ConsentManagementPlatformConfigured") && !string.IsNullOrWhiteSpace(publisherId) && !string.IsNullOrWhiteSpace(slotId))
+        {
+            <div class="ad-placement mt-4"><span>ADVERTISEMENT</span><ins class="adsbygoogle" style="display:block" data-ad-client="@publisherId" data-ad-slot="@slotId" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
+            <script>window.adsbygoogle = window.adsbygoogle || []; window.adsbygoogle.push({});</script>
+        }
+        else { <div class="sponsor-slot mt-4"><span>SPONSORED</span><strong>Finance Freedom is supported by the Free plan.</strong><small>Ad delivery starts after publisher approval and certified consent setup.</small></div> }
+    }
+</div>

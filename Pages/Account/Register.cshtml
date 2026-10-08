@@ -1,0 +1,24 @@
+@page "/account/register"
+@model PocketLedger.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Create your account";
+}
+
+<div class="container account-shell py-5">
+    <div class="account-card">
+        <span class="section-kicker">START WITH A CLEARER VIEW</span>
+        <h1>Create your account</h1>
+        <p class="account-intro">Your transactions stay private to your account.</p>
+        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <div class="mb-3"><label asp-for="Input.Email" class="form-label">Email address</label><input asp-for="Input.Email" class="form-control" autocomplete="email" /><span asp-validation-for="Input.Email" class="text-danger"></span></div>
+            <div class="mb-3"><label asp-for="Input.Password" class="form-label">Password</label><input asp-for="Input.Password" class="form-control" autocomplete="new-password" /><span asp-validation-for="Input.Password" class="text-danger"></span><div class="form-text">At least 12 characters, including uppercase, lowercase, a number, and a symbol. Your browser may offer to save it after signup.</div></div>
+            <div class="mb-4"><label asp-for="Input.ConfirmPassword" class="form-label">Confirm password</label><input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" /><span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span></div>
+            <button type="submit" class="btn btn-primary w-100">Create account</button>
+        </form>
+        <p class="account-switch">Already have an account? <a asp-page="/Account/Login" asp-route-returnUrl="@Model.ReturnUrl">Sign in</a></p>
+        <p class="account-legal">By creating an account, you agree to our <a asp-page="/Privacy">Privacy Policy</a>.</p>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

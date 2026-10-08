@@ -1,0 +1,31 @@
+@page "/account/manage"
+@model PocketLedger.Pages.Account.ManageModel
+@{
+    ViewData["Title"] = "Account settings";
+}
+
+<div class="container account-shell py-5">
+    <div class="account-card account-wide">
+        <span class="section-kicker">YOUR ACCOUNT</span>
+        <h1>Account settings</h1>
+        <div class="account-detail"><span>Email</span><strong>@Model.Account.Email</strong></div>
+        <div class="account-detail"><span>Plan</span><strong>@(Model.Account.IsPlus ? "Finance Freedom Plus" : "Free")</strong></div>
+        @if (Model.Account.StripeCustomerId is not null)
+        {
+            <form method="post" action="/billing/portal" class="my-3"><button class="btn btn-outline-primary" type="submit">Manage or cancel Plus</button></form>
+        }
+        <hr class="my-4" />
+        <div class="danger-zone">
+            <h2>Delete your account</h2>
+            <p>This permanently deletes your profile, transactions, and budgets. Active Plus subscriptions must be cancelled first. Stripe may retain billing records as described in its privacy policy.</p>
+            <form method="post" asp-page-handler="Delete">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                <div class="mb-3"><label asp-for="Input.Password" class="form-label">Current password</label><input asp-for="Input.Password" class="form-control" autocomplete="current-password" /></div>
+                <div class="mb-3"><label asp-for="Input.Confirmation" class="form-label">Type DELETE to confirm</label><input asp-for="Input.Confirmation" class="form-control" autocomplete="off" /></div>
+                <button type="submit" class="btn btn-danger">Permanently delete account</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

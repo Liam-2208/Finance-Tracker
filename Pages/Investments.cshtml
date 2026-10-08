@@ -1,0 +1,24 @@
+@page "/investments"
+@model PocketLedger.Pages.InvestmentsModel
+@{ ViewData["Title"] = "Investments"; }
+<div class="container page-shell py-5">
+    <div class="section-kicker">MARKET WATCH</div><h1 class="display-5 fw-bold">Investments</h1>
+    <p class="lead text-muted">Company prices and headlines for information only. This is not investment advice.</p>
+    @if (!Model.FeedConfigured)
+    {
+        <div class="feed-setup panel-card p-4 mb-4"><strong>Market feeds are not connected yet.</strong><p class="mb-0">Add a licensed Finnhub API key as <code>MarketData:FinnhubApiKey</code> in the server’s secret configuration to display prices and headlines. No sample prices are shown.</p></div>
+    }
+    else
+    {
+        <div class="small text-muted mb-3">Prices and percentage change in USD · feed timestamps shown on each card. Data availability depends on your provider plan.</div>
+        @if (Model.Companies.Count == 0) { <div class="feed-setup panel-card p-3">No quotes were returned. Check provider access and symbol permissions.</div> }
+        <div class="row g-3 mb-5">
+        @foreach (var company in Model.Companies)
+        { <div class="col-sm-6 col-lg"><article class="company-card"><span>@company.Symbol</span><h2>@company.Name</h2><strong>@company.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</strong><div class="@(company.ChangePercent >= 0 ? "market-up" : "market-down")">@(company.ChangePercent >= 0 ? "+" : "")@company.ChangePercent.ToString("0.00")%</div><small>Updated @company.UpdatedAt.ToLocalTime().ToString("HH:mm")</small></article></div> }
+        </div>
+        <div class="section-heading mb-3"><div><span class="section-kicker">LATEST</span><h2>Market news</h2></div></div>
+        @if (Model.Stories.Count == 0) { <div class="panel-card p-3">No headlines are available right now.</div> }
+        @foreach (var story in Model.Stories) { <article class="news-card"><div><small>@story.Source · @story.PublishedAt.ToLocalTime().ToString("dd MMM, HH:mm")</small><h3><a href="@story.Url" target="_blank" rel="noopener noreferrer">@story.Headline</a></h3></div><span aria-hidden="true">↗</span></article> }
+    }
+    <p class="market-disclaimer mt-4">Company names are a watchlist, not a ranking or recommendation. Market data may be delayed, incomplete, or unavailable. Check an authorized source before making decisions.</p>
+</div>

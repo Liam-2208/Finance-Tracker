@@ -1,0 +1,29 @@
+databases:
+  - name: finance-freedom-db
+    databaseName: financefreedom
+    user: financefreedom
+    plan: 0.5c-1g
+    region: frankfurt
+    postgresMajorVersion: "18"
+    ipAllowList: []
+
+services:
+  - type: web
+    name: finance-freedom
+    runtime: docker
+    region: frankfurt
+    plan: 1c-2g
+    healthCheckPath: /healthz
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_HTTP_PORTS
+        value: "10000"
+      - key: PORT
+        value: "10000"
+      - key: Database__Provider
+        value: Postgres
+      - key: Database__Postgres__Url
+        fromDatabase:
+          name: finance-freedom-db
+          property: connectionString

@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="@(ViewData["Description"] ?? "Finance Freedom helps you understand income, spending, savings goals and budgets.")" />
+    <meta name="theme-color" content="#174d3d" />
+    <title>@ViewData["Title"] - Finance Freedom</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/FinanceFreedom.styles.css" asp-append-version="true" />
+    @{
+        var adPublisher = Context.RequestServices.GetRequiredService<IConfiguration>()["Advertising:PublisherId"];
+        var adsEnabled = Context.RequestServices.GetRequiredService<IConfiguration>().GetValue<bool>("Advertising:Enabled") && Context.RequestServices.GetRequiredService<IConfiguration>().GetValue<bool>("Advertising:ConsentManagementPlatformConfigured");
+    }
+    @if (adsEnabled && ViewData["EnableAds"] is true && !string.IsNullOrWhiteSpace(adPublisher)) { <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@adPublisher" crossorigin="anonymous"></script> }
+</head>
+<body>
+    <header class="app-header">
+        <nav class="app-nav container" aria-label="Main navigation">
+            <a class="brand-lockup" asp-area="" asp-page="/Home">
+                <span class="brand-mark">F</span>
+                <span class="brand-name">finance<span> freedom</span></span>
+            </a>
+            <div class="nav-links">
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "active" : "")" asp-area="" asp-page="/Index">Overview</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Savings" ? "active" : "")" asp-page="/Savings">Savings</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Investments" ? "active" : "")" asp-page="/Investments">Investments</a>
+                @if (User.Identity?.IsAuthenticated == true) { <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Banking" ? "active" : "")" asp-page="/Banking">Bank cards</a> }
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Plans" ? "active" : "")" asp-area="" asp-page="/Plans">Plans</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Privacy" ? "active" : "")" asp-area="" asp-page="/Privacy">Privacy</a>
+            </div>
+            <div class="account-nav">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a class="nav-link" asp-page="/Account/Manage">Account</a>
+                    <form method="post" asp-page="/Account/Logout"><button class="nav-link" type="submit">Sign out</button></form>
+                }
+                else
+                {
+                    <a class="nav-link" asp-page="/Account/Login">Sign in</a>
+                    <a class="btn nav-signup" asp-page="/Account/Register">Get started</a>
+                }
+            </div>
+        </nav>
+    </header>
+    <main role="main">
+            @RenderBody()
+    </main>
+
+    <footer class="app-footer">
+        <div class="container d-flex justify-content-between flex-wrap gap-2">
+            <span>&copy; 2026 Finance Freedom</span>
+            <span>Your money, with more freedom.</span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

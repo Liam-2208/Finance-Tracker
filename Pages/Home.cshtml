@@ -1,0 +1,39 @@
+@page "/"
+@{
+    ViewData["Title"] = "Money, made clearer";
+    ViewData["Description"] = "A calmer way to track your money, plan savings and understand your spending. Start with Finance Freedom for free.";
+}
+<div class="home-page">
+    <section class="home-hero">
+        <div class="container home-hero-grid">
+            <div class="home-copy">
+                <div class="home-eyebrow"><span></span> A FRESH START FOR YOUR FINANCES</div>
+                <h1>Feel better about<br />your <em>money.</em></h1>
+                <p>See what comes in, what goes out and what you could put aside. A simple, private place to make your next money move with confidence.</p>
+                <div class="home-actions"><a asp-page="/Account/Register" class="btn home-primary">Get started for free <span aria-hidden="true">→</span></a><a asp-page="/Plans" class="home-secondary">Explore the plans</a></div>
+                <div class="home-trust"><span aria-hidden="true">✓</span> No card needed to start <i></i> Built around your own entries</div>
+            </div>
+            <div class="home-visual" aria-label="Illustration of a personal finance dashboard">
+                <div class="visual-glow"></div>
+                <div class="visual-window">
+                    <div class="visual-top"><span class="visual-logo">F</span><span>My month</span><span class="visual-menu">•••</span></div>
+                    <div class="visual-balance-label">LEFT AFTER SPENDING</div><div class="visual-balance">Your money, in focus</div>
+                    <div class="visual-chart"><div style="height:32%"></div><div style="height:48%"></div><div style="height:40%"></div><div style="height:69%"></div><div style="height:55%"></div><div style="height:82%"></div><div style="height:64%"></div><div style="height:93%"></div><div style="height:76%"></div><div style="height:100%"></div><div style="height:80%"></div><div style="height:92%"></div></div>
+                    <div class="visual-legend"><span><i></i> Income</span><span><i></i> Spending</span></div>
+                    <div class="visual-categories"><span>Spending by category</span><div><i></i><b></b></div><div><i></i><b></b></div><div><i></i><b></b></div></div>
+                </div>
+                <div class="visual-note"><span>✦</span><div><strong>A little progress adds up</strong><small>Make a plan that works for you</small></div></div>
+            </div>
+        </div>
+    </section>
+    <section class="home-benefits container py-5">
+        <div class="home-section-heading"><span class="section-kicker">LESS GUESSWORK. MORE POSSIBILITY.</span><h2>Money tools that feel human.</h2><p>Start with the basics, then make the plan your own.</p></div>
+        <div class="row g-3 g-lg-4 mt-3">
+            <div class="col-md-4"><article class="home-feature"><span class="feature-symbol feature-green">↗</span><h3>Know where it goes</h3><p>Log income and spending, then see the categories taking the biggest share.</p><a asp-page="/Account/Register">Track your money <span>→</span></a></article></div>
+            <div class="col-md-4"><article class="home-feature"><span class="feature-symbol feature-lime">◎</span><h3>Make room to save</h3><p>Try a monthly savings goal based on the income and spending you record.</p><a asp-page="/Account/Register">Plan a savings goal <span>→</span></a></article></div>
+            <div class="col-md-4"><article class="home-feature"><span class="feature-symbol feature-blue">⌁</span><h3>Build better habits</h3><p>Set category budgets and check in weekly or monthly, in a way that suits you.</p><a asp-page="/Plans">See what’s included <span>→</span></a></article></div>
+        </div>
+    </section>
+    <section class="home-cta"><div class="container home-cta-inner"><div><span class="section-kicker">YOUR NEXT STEP STARTS HERE</span><h2>A clearer view can change everything.</h2><p>Make your free account and start with the numbers you already know.</p></div><a asp-page="/Account/Register" class="btn home-primary">Create your free account <span aria-hidden="true">→</span></a></div></section>
+    <section class="home-footnote container py-4"><span>Finance Freedom is a money-tracking tool, not a financial adviser.</span><a asp-page="/Privacy">Read our privacy notice</a></section>
+</div>
