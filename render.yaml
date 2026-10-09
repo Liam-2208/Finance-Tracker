@@ -27,3 +27,5 @@ services:
         fromDatabase:
           name: finance-freedom-db
           property: connectionString
+      - key: Advertising__PublisherId
+        value: ca-pub-2320073237892936
